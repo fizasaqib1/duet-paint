@@ -9,7 +9,7 @@ const brushType = document.getElementById('brushType');
 const clearBtn = document.getElementById('clearBtn');
 const saveBtn = document.getElementById('saveBtn');
 
-const socket = io("https://94201f60-373a-41cc-86d3-48c88d75ae26-00-41ol8kgpkytn.sisko.replit.dev");
+const socket = io(window.location.origin);
 let drawing = false;
 let lastX = 0;
 let lastY = 0;
