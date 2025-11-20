@@ -15,20 +15,27 @@ let lastX = 0;
 let lastY = 0;
 
 canvas.addEventListener('mousedown', e => { 
-  drawing = true; 
-  lastX = e.clientX; 
-  lastY = e.clientY; 
+  drawing = true;
+  const rect = canvas.getBoundingClientRect();
+  lastX = e.clientX - rect.left;
+  lastY = e.clientY - rect.top;
 });
 canvas.addEventListener('mouseup', () => drawing = false);
 canvas.addEventListener('mouseout', () => drawing = false);
-canvas.addEventListener('mousemove', e => drawMove(e.clientX, e.clientY));
+canvas.addEventListener('mousemove', e => {
+  const rect = canvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+  drawMove(x, y);
+});
 
 canvas.addEventListener('touchstart', e => {
   e.preventDefault();
   drawing = true;
   const touch = e.touches[0];
-  lastX = touch.clientX;
-  lastY = touch.clientY;
+  const rect = canvas.getBoundingClientRect();
+  lastX = touch.clientX - rect.left;
+  lastY = touch.clientY - rect.top;
 });
 canvas.addEventListener('touchend', e => {
   e.preventDefault();
@@ -41,7 +48,10 @@ canvas.addEventListener('touchcancel', e => {
 canvas.addEventListener('touchmove', e => {
   e.preventDefault();
   const touch = e.touches[0];
-  drawMove(touch.clientX, touch.clientY);
+  const rect = canvas.getBoundingClientRect();
+  const x = touch.clientX - rect.left;
+  const y = touch.clientY - rect.top;
+  drawMove(x, y);
 });
 
 function drawMove(x, y){
@@ -52,7 +62,6 @@ function drawMove(x, y){
 
   drawLine(lastX, lastY, x, y, color, size, type);
   socket.emit('drawing', { x0: lastX, y0: lastY, x1: x, y1: y, color, size, type });
-  socket.emit('cursor', { id: socket.id, x, y, color });
 
   lastX = x;
   lastY = y;
@@ -91,21 +100,9 @@ socket.on('drawing', data => {
 
 socket.on('clearCanvas', () => ctx.clearRect(0,0,canvas.width,canvas.height));
 
-const cursors = {};
-socket.on('cursor', data => {
-  cursors[data.id] = data;
-  drawCursors();
+window.addEventListener('resize', () => {
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  ctx.putImageData(imageData, 0, 0);
 });
-
-function drawCursors(){
-  ctx.save();
-  for(const id in cursors){
-    const c = cursors[id];
-    ctx.beginPath();
-    ctx.arc(c.x, c.y, 5, 0, Math.PI*2);
-    ctx.fillStyle = c.color;
-    ctx.fill();
-    ctx.closePath();
-  }
-  ctx.restore();
-}
