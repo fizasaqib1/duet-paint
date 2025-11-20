@@ -8,8 +8,7 @@ const brushSize = document.getElementById('brushSize');
 const clearBtn = document.getElementById('clearBtn');
 const saveBtn = document.getElementById('saveBtn');
 
-const socket = io('http://localhost:3000');
-
+const socket = io();
 let drawing = false;
 let lastX = 0;
 let lastY = 0;
