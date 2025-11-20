@@ -14,14 +14,21 @@ let drawing = false;
 let lastX = 0;
 let lastY = 0;
 
-canvas.addEventListener('mousedown', e => { drawing = true; lastX = e.clientX; lastY = e.clientY; });
+canvas.addEventListener('mousedown', e => {
+    drawing = true;
+    const rect = canvas.getBoundingClientRect();
+    lastX = e.clientX - rect.left;
+    lastY = e.clientY - rect.top;
+});
+
 canvas.addEventListener('mouseup', () => drawing = false);
 canvas.addEventListener('mouseout', () => drawing = false);
 
 canvas.addEventListener('mousemove', e => {
     if (!drawing) return;
-    const x = e.clientX;
-    const y = e.clientY;
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
 
     const color = colorPicker.value;
     const size = brushSize.value;
@@ -33,7 +40,7 @@ canvas.addEventListener('mousemove', e => {
     lastY = y;
 });
 
-function drawLine(x0, y0, x1, y1, color, size){
+function drawLine(x0, y0, x1, y1, color, size) {
     ctx.beginPath();
     ctx.strokeStyle = color;
     ctx.lineWidth = size;
@@ -47,13 +54,15 @@ function drawLine(x0, y0, x1, y1, color, size){
 socket.on('drawing', data => drawLine(data.x0, data.y0, data.x1, data.y1, data.color, data.size));
 socket.on('clearCanvas', () => ctx.clearRect(0, 0, canvas.width, canvas.height));
 
-clearBtn.addEventListener('click', () => { 
-    ctx.clearRect(0, 0, canvas.width, canvas.height); 
-    socket.emit('clearCanvas'); 
+
+clearBtn.addEventListener('click', () => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    socket.emit('clearCanvas');
 });
-saveBtn.addEventListener('click', () => { 
-    const link = document.createElement('a'); 
-    link.download = 'duet-paint.png'; 
-    link.href = canvas.toDataURL(); 
-    link.click(); 
+
+saveBtn.addEventListener('click', () => {
+    const link = document.createElement('a');
+    link.download = 'duet-paint.png';
+    link.href = canvas.toDataURL();
+    link.click();
 });
