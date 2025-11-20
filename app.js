@@ -14,13 +14,6 @@ let drawing = false;
 let lastX = 0;
 let lastY = 0;
 
-canvas.addEventListener('mousedown', e => { 
-  drawing = true; 
-  lastX = e.clientX; 
-  lastY = e.clientY; 
-});
-canvas.addEventListener('mouseup', () => drawing = false);
-canvas.addEventListener('mouseout', () => drawing = false);
 // --- Desktop Mouse Events ---
 canvas.addEventListener('mousedown', e => { 
   drawing = true; 
@@ -68,9 +61,8 @@ function drawMove(x, y){
   lastY = y;
 }
 
-
-// draw lines
-function drawLine(x0, y0, x1, y1, color, size, type, opacity = 1) {
+// --- Draw line ---
+function drawLine(x0, y0, x1, y1, color, size, type, opacity = 1){
   ctx.beginPath();
   ctx.strokeStyle = color;
   ctx.globalAlpha = opacity;
@@ -85,13 +77,12 @@ function drawLine(x0, y0, x1, y1, color, size, type, opacity = 1) {
   ctx.globalAlpha = 1;
 }
 
-// clear canvas
+// --- Clear and Save ---
 clearBtn.addEventListener('click', () => {
   ctx.clearRect(0,0,canvas.width,canvas.height);
   socket.emit('clearCanvas');
 });
 
-// save canvas
 saveBtn.addEventListener('click', () => {
   const link = document.createElement('a'); 
   link.download = 'duet-paint.png'; 
@@ -99,23 +90,24 @@ saveBtn.addEventListener('click', () => {
   link.click(); 
 });
 
-// listen for remote drawing
+// --- Socket.io listeners ---
 socket.on('drawing', data => {
   drawLine(data.x0, data.y0, data.x1, data.y1, data.color, data.size, data.type);
 });
 
-// listen for clearing
 socket.on('clearCanvas', () => ctx.clearRect(0,0,canvas.width,canvas.height));
 
-// cursors
+// --- Cursor previews ---
 const cursors = {};
 socket.on('cursor', data => {
   cursors[data.id] = data;
   drawCursors();
 });
 
-function drawCursors() {
-  ctx.clearRect(0,0,canvas.width,canvas.height);
+function drawCursors(){
+  // Redraw all lines first (so cursor doesn't erase drawings)
+  // Here, for simplicity, we only draw cursors on top
+  ctx.save();
   for(const id in cursors){
     const c = cursors[id];
     ctx.beginPath();
@@ -124,4 +116,5 @@ function drawCursors() {
     ctx.fill();
     ctx.closePath();
   }
+  ctx.restore();
 }
