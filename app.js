@@ -9,12 +9,11 @@ const brushType = document.getElementById('brushType');
 const clearBtn = document.getElementById('clearBtn');
 const saveBtn = document.getElementById('saveBtn');
 
-const socket = io(window.location.origin);
+const socket = io("https://94201f60-373a-41cc-86d3-48c88d75ae26-00-41ol8kgpkytn.sisko.replit.dev");
 let drawing = false;
 let lastX = 0;
 let lastY = 0;
 
-// --- Desktop Mouse Events ---
 canvas.addEventListener('mousedown', e => { 
   drawing = true; 
   lastX = e.clientX; 
@@ -24,7 +23,6 @@ canvas.addEventListener('mouseup', () => drawing = false);
 canvas.addEventListener('mouseout', () => drawing = false);
 canvas.addEventListener('mousemove', e => drawMove(e.clientX, e.clientY));
 
-// --- Mobile Touch Events ---
 canvas.addEventListener('touchstart', e => {
   e.preventDefault();
   drawing = true;
@@ -46,7 +44,6 @@ canvas.addEventListener('touchmove', e => {
   drawMove(touch.clientX, touch.clientY);
 });
 
-// --- Drawing function ---
 function drawMove(x, y){
   if(!drawing) return;
   const color = colorPicker.value;
@@ -61,7 +58,6 @@ function drawMove(x, y){
   lastY = y;
 }
 
-// --- Draw line ---
 function drawLine(x0, y0, x1, y1, color, size, type, opacity = 1){
   ctx.beginPath();
   ctx.strokeStyle = color;
@@ -77,7 +73,6 @@ function drawLine(x0, y0, x1, y1, color, size, type, opacity = 1){
   ctx.globalAlpha = 1;
 }
 
-// --- Clear and Save ---
 clearBtn.addEventListener('click', () => {
   ctx.clearRect(0,0,canvas.width,canvas.height);
   socket.emit('clearCanvas');
@@ -90,14 +85,12 @@ saveBtn.addEventListener('click', () => {
   link.click(); 
 });
 
-// --- Socket.io listeners ---
 socket.on('drawing', data => {
   drawLine(data.x0, data.y0, data.x1, data.y1, data.color, data.size, data.type);
 });
 
 socket.on('clearCanvas', () => ctx.clearRect(0,0,canvas.width,canvas.height));
 
-// --- Cursor previews ---
 const cursors = {};
 socket.on('cursor', data => {
   cursors[data.id] = data;
@@ -105,8 +98,6 @@ socket.on('cursor', data => {
 });
 
 function drawCursors(){
-  // Redraw all lines first (so cursor doesn't erase drawings)
-  // Here, for simplicity, we only draw cursors on top
   ctx.save();
   for(const id in cursors){
     const c = cursors[id];
