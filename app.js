@@ -21,12 +21,41 @@ canvas.addEventListener('mousedown', e => {
 });
 canvas.addEventListener('mouseup', () => drawing = false);
 canvas.addEventListener('mouseout', () => drawing = false);
+// --- Desktop Mouse Events ---
+canvas.addEventListener('mousedown', e => { 
+  drawing = true; 
+  lastX = e.clientX; 
+  lastY = e.clientY; 
+});
+canvas.addEventListener('mouseup', () => drawing = false);
+canvas.addEventListener('mouseout', () => drawing = false);
+canvas.addEventListener('mousemove', e => drawMove(e.clientX, e.clientY));
 
-canvas.addEventListener('mousemove', e => {
-  if (!drawing) return;
+// --- Mobile Touch Events ---
+canvas.addEventListener('touchstart', e => {
+  e.preventDefault();
+  drawing = true;
+  const touch = e.touches[0];
+  lastX = touch.clientX;
+  lastY = touch.clientY;
+});
+canvas.addEventListener('touchend', e => {
+  e.preventDefault();
+  drawing = false;
+});
+canvas.addEventListener('touchcancel', e => {
+  e.preventDefault();
+  drawing = false;
+});
+canvas.addEventListener('touchmove', e => {
+  e.preventDefault();
+  const touch = e.touches[0];
+  drawMove(touch.clientX, touch.clientY);
+});
 
-  const x = e.clientX;
-  const y = e.clientY;
+// --- Drawing function ---
+function drawMove(x, y){
+  if(!drawing) return;
   const color = colorPicker.value;
   const size = brushSize.value;
   const type = brushType.value;
@@ -37,7 +66,8 @@ canvas.addEventListener('mousemove', e => {
 
   lastX = x;
   lastY = y;
-});
+}
+
 
 // draw lines
 function drawLine(x0, y0, x1, y1, color, size, type, opacity = 1) {
